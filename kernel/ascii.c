@@ -694,6 +694,61 @@ static u8 UNDERSCORE[8] = {
   0b00000000
 };
 
+static u8 BACKTICK[8] = {
+  0b00000000,
+  0b00100000,
+  0b00010000,
+  0b00001000,
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000
+};
+
+static u8 OPEN_CURLY[8] = {
+  0b00000000,
+  0b00001100,
+  0b00010000,
+  0b00001000,
+  0b00001000,
+  0b00010000,
+  0b00001100,
+  0b00000000
+};
+
+static u8 BAR[8] = {
+  0b00011000,
+  0b00011000,
+  0b00011000,
+  0b00011000,
+  0b00011000,
+  0b00011000,
+  0b00011000,
+  0b00011000
+};
+
+static u8 CLOSE_CURLY[8] = {
+  0b00000000,
+  0b00110000,
+  0b00001000,
+  0b00010000,
+  0b00010000,
+  0b00001000,
+  0b00110000,
+  0b00000000
+};
+
+static u8 TILDE[8] = {
+  0b00000000,
+  0b00000000,
+  0b00110110,
+  0b01001000,
+  0b00000000,
+  0b00000000,
+  0b00000000,
+  0b00000000,
+};
+
 static u8 EMPTY[8] = {
   0b00000000,
   0b00000000,
@@ -705,7 +760,7 @@ static u8 EMPTY[8] = {
   0b00000000
 };
 
-static u8 *ASCII[64] = {
+static u8 *ASCII[69] = {
   EMPTY, EXCLAMATION, DOUBLE_QUOTE,
   HASHTAG, DOLLAR_SIGN, PERCENT, AMP,
   SINGLE_QUOTE, OPEN_PRIN, CLOSE_PRIN,
@@ -718,21 +773,14 @@ static u8 *ASCII[64] = {
   A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P,
   Q, R, S, T, U, V, W, X, Y, Z,
   OPEN_BRAK, BACK_SLASH, CLOSE_BRAK, CARRET,
-  UNDERSCORE
+  UNDERSCORE, BACKTICK, OPEN_CURLY, BAR,
+  CLOSE_CURLY, TILDE
 };
 
 u8 *get_mask(char a) {
   u8 idx = (u8)a - 32;
-  return ASCII[idx];
-
-  /*u8 *arr = (u8 *)malloc(sizeof(u8)*64, true, 0);
-
-  u8 idx = (u8)a - 32;
-  u8 *mask = ASCII[idx];
-
-  for (int i = 0; i < 64; i++) {
-    arr[i] = c & mask[i];
+  if (idx >= 91) {
+    idx -= 26;
   }
-
-  return arr;*/
+  return ASCII[idx];
 }

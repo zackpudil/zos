@@ -24,7 +24,7 @@ void kmain() {
 
   print_str("ABCDEFGHIJKLMNOPQRSTUVWXYZ\n\0");
   print_str("0123456789\n\0");
-  print_str("!@#$%^&*()-=_+[];'\\:\",./<>?\n\0");
+  print_str("`~!@#$%^&*()-=_+[]{};'\:\"|,./<>?\n\0");
 
   swap_buffer();
   video_draw();
@@ -54,18 +54,18 @@ void print_char(char c, u8 color) {
   }
 
   if (c == '\b') {
-    col -= 1;
-    if (col < 0) {
-      col = 0;
+    if (col == 0) {
       row -= 1;
+      col = 39; 
+    } else {
+      col -= 1;
     }
     inc = false;
   }
 
-  mask = get_mask(c);
-  fill_rect_mask(row, col, 8, color, mask);
-
   if (inc) {
+    mask = get_mask(c);
+    fill_rect_mask(row, col, 8, color, mask);
     col += 1;
     if (col >= 40) {
       col = 0;
