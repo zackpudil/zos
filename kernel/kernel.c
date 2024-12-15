@@ -1,17 +1,11 @@
 #include "../cpu/types.h"
 #include "../interrupts/isr.h"
 #include "../drivers/keyboard.h"
-#include "../drivers/video.h"
+#include "../lib/print.h"
 #include "ascii.h"
 
 static u8 screen = 0x01;
-static u8 row = 0;
-static u8 col = 0;
-
 static void user_input(char input);
-
-void print_char(char c, u8 color);
-void print_str(char *str);
 
 void kmain() {
   isr_install();
@@ -22,9 +16,8 @@ void kmain() {
   video_init();
   clear_screen(0);
 
-  print_str("ABCDEFGHIJKLMNOPQRSTUVWXYZ\n\0");
-  print_str("0123456789\n\0");
-  print_str("`~!@#$%^&*()-=_+[]{};'\:\"|,./<>?\n\0");
+  print_str("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\n\0", 0x0a);
+  print_str("`~!@#$%^&*()-=_+[]{};':\"|\\,./<>?\n\0", 0x0a);
 
   swap_buffer();
   video_draw();
@@ -41,52 +34,3 @@ static void user_input(char input) {
   video_draw();
 }
 
-void print_char(char c, u8 color) {
-  bool inc = true;
-
-  u8 *mask = get_mask(' ');
-  fill_rect_mask(row, col, 8, color, mask);
-
-  if (c == '\n') {
-    row += 1;
-    col = 0;
-    inc = false;
-  }
-
-  if (c == '\b') {
-    if (col == 0) {
-      row -= 1;
-      col = 39; 
-    } else {
-      col -= 1;
-    }
-    inc = false;
-  }
-
-  if (inc) {
-    mask = get_mask(c);
-    fill_rect_mask(row, col, 8, color, mask);
-    col += 1;
-    if (col >= 40) {
-      col = 0;
-      row += 1;
-    }
-  }
-
-  mask = get_mask('_');
-  fill_rect_mask(row, col, 8, color, mask);
-}
-
-void print_str(char *str) {
-  u32 i = 0;
-  while (str[i] != '\0') {
-    print_char(str[i], screen);
-    screen++;
-    if (screen >= 0x10) {
-      screen = 1;
-    }
-    i++;
-  }
-  swap_buffer();
-  video_draw();
-}

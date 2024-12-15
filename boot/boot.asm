@@ -4,15 +4,18 @@
 KERNEL_ADDR equ 0x1000
 
 start:
+  ; initialize stack pointer
   mov bp, 0x9000
   mov sp, bp
 
+  ; set video mode to 320x200 256 colors
   mov ax, 0x0013
   int 0x10
 
   call load_kernel
   call switch
 
+  ; should never get here
   hlt
 
 load_kernel:
@@ -30,6 +33,7 @@ load_kernel:
   int 0x13
 
   jnc .done
+  ; print 'E' to screen if error
   mov ah, 0x0E
   mov al, 'E'
   int 0x10
@@ -40,9 +44,10 @@ load_kernel:
   ret
 
 switch:
-  cli
-  lgdt [gdt_desc]
-  mov eax, cr0
+  cli               ; clear interrupts
+  lgdt [gdt_desc]   ; load global descriptor table
+
+  mov eax, cr0      
   or eax, 0x1
   mov cr0, eax
 
@@ -50,6 +55,7 @@ switch:
 
 [bits 32]
 start_32:
+  ; initailze all registers
   mov ax, DATA_SEG
   mov ds, ax
   mov ss, ax
@@ -57,9 +63,11 @@ start_32:
   mov fs, ax
   mov gs, ax
 
+  ; initialize new 32-bit stack pointer
   mov ebp, 0x90000
   mov esp, ebp
 
+  ; call kernel (see kernel/entry.s)
   call KERNEL_ADDR
   jmp $
 
@@ -95,7 +103,6 @@ DATA_SEG equ gdt_data - gdt_start
 .done:
   popa
   ret
-
 
 times 510-($-$$) db 0
 dw 0xAA55
