@@ -40,7 +40,7 @@ static void keyboard_callback(registers_t regs) {
 
   char letter = shift_down ? sc_asccii_upper[(int)scancode] : sc_ascii_lower[(int)scancode];
 
-  if (char_handler != 0) {
+  if (char_handler != 0 && letter != '\0') {
     char_handler(letter);
   }
 }
