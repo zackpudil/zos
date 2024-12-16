@@ -11,7 +11,7 @@ start:
   mov bx, LOADING_MSG
   call print
 
-  mov dh, 0x36
+  mov dh, 34 
   call load_kernel
 
   call switch

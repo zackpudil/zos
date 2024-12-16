@@ -5,6 +5,11 @@
 static u8 row = 0;
 static u8 col = 0;
 
+void set_char(char c, u8 color) {
+  u8 *mask = get_mask(c);
+  fill_rect_mask(row, col, 8, color, mask);
+}
+
 void print_char(char c, u8 color) {
   bool inc = true;
 
@@ -36,9 +41,6 @@ void print_char(char c, u8 color) {
       row += 1;
     }
   }
-
-  mask = get_mask('_');
-  fill_rect_mask(row, col, 8, color, mask);
 }
 
 void print_str(char *str, u8 color) {
@@ -47,4 +49,9 @@ void print_str(char *str, u8 color) {
     print_char(str[i], color);
     i++;
   }
+}
+
+void set_cursor(u8 r, u8 c) {
+  row = r;
+  col = c;
 }
