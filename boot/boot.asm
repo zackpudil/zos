@@ -8,21 +8,42 @@ start:
   mov bp, 0x9000
   mov sp, bp
 
-  ; set video mode to 320x200 256 colors
-  mov ax, 0x0013
-  int 0x10
+  mov bx, LOADING_MSG
+  call print
 
+  mov dh, 0x36
   call load_kernel
+
   call switch
 
   ; should never get here
   hlt
 
+print:
+  pusha
+  mov ah, 0x0e
+.loop:
+  mov al, [bx]
+  cmp al, 0
+
+  je .end
+
+  int 0x10
+
+  add bx, 1
+
+  jmp .loop
+
+.end:
+  popa
+  ret
+
 load_kernel:
   pusha
+  push dx
 
   mov ah, 0x02 ; command
-  mov al, 0x20 ; # sectors to read
+  mov al, dh   ; # sectors to read
   mov ch, 0x00 ; cylinder
   mov cl, 0x02 ; start Sector
   mov dh, 0x00 ; head
@@ -32,18 +53,30 @@ load_kernel:
 
   int 0x13
 
-  jnc .done
-  ; print 'E' to screen if error
-  mov ah, 0x0E
-  mov al, 'E'
-  int 0x10
-  jmp $
+  jc .disk_error
 
-.done:
+  pop dx
+  cmp al, dh
+  jne .sectors_error
+
   popa
   ret
 
+.disk_error:
+  mov bx, DISK_ERROR
+  call print
+  jmp $
+
+.sectors_error:
+  mov bx, SECTOR_ERROR
+  call print
+  jmp $
+
 switch:
+  ; set video mode to 320x200 256 colors
+  mov ax, 0x0013
+  int 0x10
+
   cli               ; clear interrupts
   lgdt [gdt_desc]   ; load global descriptor table
 
@@ -103,6 +136,10 @@ DATA_SEG equ gdt_data - gdt_start
 .done:
   popa
   ret
+
+LOADING_MSG db "Loading the kernel...", 0x0a, 0x0d, 0
+DISK_ERROR db "Disk read error", 0x0a, 0x0d, 0
+SECTOR_ERROR db "Incorrect number of sectors read", 0x0a, 0x0d, 0
 
 times 510-($-$$) db 0
 dw 0xAA55

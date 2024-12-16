@@ -1,5 +1,5 @@
 #include "print.h"
-#include "../kernel/ascii.h"
+#include "ascii.h"
 #include "../drivers/video.h"
 
 static u8 row = 0;
@@ -47,6 +47,4 @@ void print_str(char *str, u8 color) {
     print_char(str[i], color);
     i++;
   }
-  swap_buffer();
-  video_draw();
 }

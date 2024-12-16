@@ -1,5 +1,4 @@
 C_SOURCES=$(wildcard kernel/*.c interrupts/*.c cpu/*.c lib/*.c drivers/*.c)
-HEADERS=$(wildcard kernel/*.h interruptes/*.h cpu/*.h lib/*.h drivers/*.h)
 OBJ=${C_SOURCES:.c=.o}
 WSL_PATH=/mnt/c/Users/zackp
 
@@ -8,8 +7,8 @@ all: run
 %.o: %.s
 	nasm -f elf $< -o $@
 
-%.o: %.c ${HEADERS}
-	gcc -g -m32 -ffreestanding -fno-pie -c $< -o $@
+%.o: %.c 
+	gcc -g -m32 -Wall -ffreestanding -fno-pie -c $< -o $@
 
 debug.elf: kernel/entry.o interrupts/interrupts.o ${OBJ} 
 	ld -m elf_i386 -o $@ -Ttext 0x1000 $^

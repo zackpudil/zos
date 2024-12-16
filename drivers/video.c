@@ -15,8 +15,14 @@ void video_draw() {
   mcopy(display_buffer, screen, BUFSIZE);
 }
 
-void swap_buffer() {
+void set_display_buffer() {
+  mcopy(working_buffer, display_buffer, BUFSIZE);
+}
+
+void swap_buffers() {
+  u8 *temp = display_buffer;
   display_buffer = working_buffer;
+  working_buffer = temp;
 }
 
 void clear_screen(u8 color) {
