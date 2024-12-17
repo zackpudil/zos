@@ -13,13 +13,13 @@ all: run
 debug.elf: kernel/entry.o interrupts/interrupts.o ${OBJ} 
 	ld -m elf_i386 -o $@ -Ttext 0x1000 $^
 
-boot/boot.bin: boot/boot.asm
+boot.bin: boot/boot.asm
 	nasm -f bin $< -o $@
 
 kernel.bin: kernel/entry.o interrupts/interrupts.o ${OBJ} 
 	ld -m elf_i386 -o $@ -Ttext 0x1000 $^ --oformat binary
 
-zos.bin: boot/boot.bin kernel.bin
+zos.bin: boot.bin kernel.bin
 	cat $^ > $@
 
 run: zos.bin
