@@ -57,7 +57,7 @@ void fill_rect(u8 row, u8 col, u8 size, u8 color) {
   }
 }
 
-void fill_rect_mask(u8 row, u8 col, u8 size, u8 color, u8 *mask)  {
+void fill_rect_mask(u8 row, u8 col, u8 size, u8 on_color, u8 off_color, u8 *mask)  {
   u32 start_row = row*size;
   u32 start_col = col*size;
 
@@ -69,7 +69,15 @@ void fill_rect_mask(u8 row, u8 col, u8 size, u8 color, u8 *mask)  {
       u8 row_mask = mask[i];
       bool col_mask = (row_mask >> (size-j)) & 1;
 
-      working_buffer[c + r*COLS] = col_mask ? color : 0x00;
+      working_buffer[c + r*COLS] = col_mask ? on_color : off_color;
     }
+  }
+}
+
+void remask(u8 orig_col, u8 new_col) {
+  for(u32 i = 0; i < ROWS; i++)
+  for(u32 j = 0; j < COLS; j++) {
+    if (working_buffer[j + i*COLS] == orig_col)
+      working_buffer[j + i*COLS] = new_col;
   }
 }

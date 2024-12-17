@@ -7,7 +7,8 @@
 
 static int keyidx = 0;
 static char keybuffer[256];
-static u8 screen_color = 0x01;
+static u8 forground_color = 0x01;
+static u8 background_color = 0x00;
 
 static void user_input(char input);
 static void do_command();
@@ -21,18 +22,18 @@ void kmain() {
   init_keyboard(user_input);
 
   video_init();
-  clear_screen(0);
+  clear_screen(background_color);
   set_cursor(0, 0);
 
-  print_str("TYPE ANYTHING: \n>", screen_color);
-  set_char('_', screen_color);
+  print_str("TYPE ANYTHING: \n>", forground_color, background_color);
+  set_char('_', forground_color, background_color);
 
   set_display_buffer();
   video_draw();
 }
 
 static void user_input(char input) {
-  print_char(input, screen_color);
+  print_char(input, forground_color, background_color);
 
   if (input == '\n') {
     do_command();
@@ -47,7 +48,7 @@ static void user_input(char input) {
     keyidx += 1;
   }
 
-  set_char('_', screen_color);
+  set_char('_', forground_color, background_color);
   set_display_buffer();
   video_draw();
 }
@@ -56,39 +57,64 @@ static void do_command() {
   if (str_begins_with("ECHO", keybuffer, 4)) {
     char *s = keybuffer;
     s += 5;
-    print_str(s, screen_color);
-    print_char('\n', 0x00);
-  } else if(str_begins_with("SET_COLOR", keybuffer, 8)) {
+    print_str(s, forground_color, background_color);
+    print_char('\n', 0x00, background_color);
+
+  } else if(str_begins_with("SET COLOR", keybuffer, 8)) {
     u8 fh = char_to_num(keybuffer[10]);
     u8 fl = char_to_num(keybuffer[11]);
     u8 f = (fh << 4) + fl;
-    screen_color = f;
-  } else if(str_begins_with("SHOW_COLOR", keybuffer, 10)) {
-    clear_screen(0);
+    forground_color = f;
+
+  } else if(str_begins_with("SET BGCOLOR", keybuffer, 10)) {
+    u8 orig_background_color = background_color;
+    u8 fh = char_to_num(keybuffer[12]);
+    u8 fl = char_to_num(keybuffer[13]);
+    u8 f = (fh << 4) + fl;
+    background_color = f;
+
+    remask(orig_background_color, background_color);
+
+  } else if (str_begins_with("SHOW COLOR", keybuffer, 10)) {
+    print_char(num_to_char((forground_color >> 4) & 0x0F), forground_color, background_color);
+    print_char(num_to_char(forground_color & 0x0F), forground_color, background_color);
+    print_char('\n', 0x00, background_color);
+
+  } else if (str_begins_with("SHOW BGCOLOR", keybuffer, 12)) {
+    print_char(num_to_char((background_color >> 4) & 0x0F), forground_color, background_color);
+    print_char(num_to_char(background_color & 0x0F), forground_color, background_color);
+    print_char('\n', 0x00, background_color);
+
+  } else if(str_begins_with("SHOW PALLET", keybuffer, 10)) {
+    clear_screen(background_color);
     set_cursor(0, 0);
-    print_str("256 COLOR PALLET: \n", 0x1f);
+
+    print_str("256 COLOR PALLET: \n", forground_color, background_color);
     u8 currentColor = 0;
     for(u8 i = 0; i < 16; i++) {
-      print_char(num_to_char(i), 0x1f);
-      print_str("X: ", 0x1f);
+      print_char(num_to_char(i), forground_color, background_color);
+      print_str("X: ", forground_color, background_color);
       for(int i = 0; i < 16; i++) {
-        print_char(num_to_char(i), currentColor);
+        print_char(num_to_char(i), currentColor, background_color);
         currentColor++;
       }
-      print_char('\n', 0x00);
+      print_char('\n', 0x00, background_color);
     }
+
   } else if (str_begins_with("CLEAR", keybuffer, 5)) {
-    clear_screen(0);
+    clear_screen(background_color);
     set_cursor(0, 0);
+
   } else if (str_begins_with("EXIT", keybuffer, 4)) {
-    print_str("EXITING...........\n", screen_color);
+    print_str("EXITING...........\n", forground_color, background_color);
     set_display_buffer();
     video_draw();
     asm("hlt");
+
   } else {
-    print_str("UNKNOWN COMMAND\n", screen_color);
+    print_str("UNKNOWN COMMAND\n", forground_color, background_color);
   }
-  print_char('>', screen_color);
+  print_char('>', forground_color, background_color);
 }
 
 static u8 char_to_num(char c) {
