@@ -29,34 +29,6 @@ void clear_screen(u8 color) {
   mset(working_buffer, color, BUFSIZE);
 }
 
-void draw_rect(u8 row, u8 col, u8 *d, u8 size) {
-  u32 start_row = row*size;
-  u32 start_col = col*size;
-
-  for(u32 i = 0; i < size; i++) {
-    for(u32 j = 0; j < size; j++) {
-      u32 r = start_row + i;
-      u32 c = start_col + j;
-
-      working_buffer[c + r*COLS] = d[j + i*size];
-    }
-  }
-}
-
-void fill_rect(u8 row, u8 col, u8 size, u8 color) {
-  u32 start_row = row*size;
-  u32 start_col = col*size;
-
-  for (u32 i = 0; i < size; i++) {
-    for (u32 j = 0; j < size; j++) {
-      u32 r = start_row + i;
-      u32 c = start_col + j;
-
-      working_buffer[c + r*COLS] = color;
-    }
-  }
-}
-
 void fill_rect_mask(u8 row, u8 col, u8 size, u8 on_color, u8 off_color, u8 *mask)  {
   u32 start_row = row*size;
   u32 start_col = col*size;

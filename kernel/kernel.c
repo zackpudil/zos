@@ -25,7 +25,7 @@ void kmain() {
   clear_screen(background_color);
   set_cursor(0, 0);
 
-  print_str("TYPE ANYTHING: \n>", forground_color, background_color);
+  print_str("ZOS IS A TERRIBLE OS \n>", forground_color, background_color);
   set_char('_', forground_color, background_color);
 
   set_display_buffer();
@@ -111,6 +111,11 @@ static void do_command() {
     video_draw();
     asm("hlt");
 
+  } else if (str_begins_with("HELP", keybuffer, 4)) {
+    print_str("SHOW PALLET: SHOWS ALL COLORS\nSHOW COLOR: SHOW CURRENT COLOR\nSHOW BGCOLOR: SHOW CURRENT BG COLOR\n", forground_color, background_color); 
+    print_str("SET COLOR XX: SET THE COLOR\nSET BGCOLOR XX: SET THE BG COLOR\n", forground_color, background_color);
+    print_str("CLEAR: CLEAR THE SCREEN\nEXIT: STOP COMPUTER\nHELP: THIS", forground_color, background_color);
+    print_char('\n', 0x00, background_color);
   } else {
     print_str("UNKNOWN COMMAND\n", forground_color, background_color);
   }
