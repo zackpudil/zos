@@ -11,7 +11,7 @@ start:
   mov bx, LOADING_MSG
   call print
 
-  mov dh, 34 
+  mov dh, 35
   call load_kernel
 
   call switch
@@ -132,10 +132,6 @@ gdt_desc:
 
 CODE_SEG equ gdt_code - gdt_start
 DATA_SEG equ gdt_data - gdt_start
-
-.done:
-  popa
-  ret
 
 LOADING_MSG db "Loading the kernel...", 0x0a, 0x0d, 0
 DISK_ERROR db "Disk read error", 0x0a, 0x0d, 0
