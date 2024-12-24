@@ -25,7 +25,7 @@ zos.bin: boot.bin kernel.bin
 run: zos.bin
 	cp $^ ${WSL_PATH}/$^
 	cmd.exe /c "qemu-system-i386.exe ^ \
-		-fda $$(wslpath -w ${WSL_PATH}/$^) ^ \
+		-drive file=$$(wslpath -w ${WSL_PATH}/$^),format=raw,index=0,if=floppy ^ \
 		-vga std ^ \
 		-s -d guest_errors"
 

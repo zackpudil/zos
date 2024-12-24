@@ -12,10 +12,10 @@ void print_color_pallet(char *keybuffer, u8 *f, u8 *b) {
   print_str("256 Color Pallet: \n", *f, *b);
   u8 currentColor = 0;
   for(u8 i = 0; i < 16; i++) {
-    print_char(num_to_char(i), *f, *b);
+    print_char(nibble_to_char(i), *f, *b);
     print_str("X: ", *f, *b);
     for(int i = 0; i < 16; i++) {
-      print_char(num_to_char(i), currentColor, *b);
+      print_char(nibble_to_char(i), currentColor, *b);
       currentColor++;
     }
     print_char('\n', 0x00, *b);
@@ -48,25 +48,23 @@ void exit(char *keybuffer, u8 *f, u8 *b) {
 void get_color(char *keybuffer, u8 *f, u8 *b) {
   UNUSED(keybuffer);
 
-  print_char(num_to_char((*f >> 4) & 0x0F), *f, *b);
-  print_char(num_to_char(*f & 0x0F), *f, *b);
+  print_char(nibble_to_char((*f >> 4) & 0x0F), *f, *b);
+  print_char(nibble_to_char(*f & 0x0F), *f, *b);
   print_char('\n', 0x00, *b);
 }
 
 void set_color(char *keybuffer, u8 *f, u8 *b) {
   UNUSED(b);
 
-  u8 fh = char_to_num(keybuffer[10]);
-  u8 fl = char_to_num(keybuffer[11]);
-  u8 nf = (fh << 4) + fl;
+  u8 nf = str_to_byte(keybuffer+10);
   *f = nf;
 }
 
 void get_bgcolor(char *keybuffer, u8 *f, u8 *b) {
   UNUSED(keybuffer);
 
-  print_char(num_to_char((*b >> 4) & 0x0F), *f, *b);
-  print_char(num_to_char(*b & 0x0F), *f, *b);
+  print_char(nibble_to_char((*b >> 4) & 0x0F), *f, *b);
+  print_char(nibble_to_char(*b & 0x0F), *f, *b);
   print_char('\n', 0x00, *b);
 }
 
@@ -74,10 +72,7 @@ void set_bgcolor(char *keybuffer, u8 *f, u8 *b) {
   UNUSED(f);
 
   u8 orig_background_color = *b;
-  u8 fh = char_to_num(keybuffer[12]);
-  u8 fl = char_to_num(keybuffer[13]);
-
-  u8 nb = (fh << 4) + fl;
+  u8 nb = str_to_byte(keybuffer+12);
   *b = nb;
   remask(orig_background_color, *b);
 }
@@ -95,6 +90,13 @@ void unknown_command(char *keybuffer, u8 *f, u8 *b) {
   print_str("Unknown Command\n", *f, *b);
 }
 
+void test_chars(char *keybuffer, u8 *f, u8 *b) {
+  print_str("ABCDEFGHIJKLMNOPQRSTUVWXYZ\n", *f, *b);
+  print_str("abcdefghijklmnopqrstuvwxyz\n", *f, *b);
+  print_str("0123456789\n", *f, *b);
+  print_str("`~!@#$%^&*()-=_+[]{};'\\:\"|,./<>?\n", *f, *b);
+};
+
 void (*get_command(char *keybuffer))(char *, u8 *, u8 *) {
   if (str_begins_with("echo", keybuffer, 4)) return echo;
   else if(str_begins_with("set color", keybuffer, 8)) return set_color;
@@ -105,6 +107,7 @@ void (*get_command(char *keybuffer))(char *, u8 *, u8 *) {
   else if (str_begins_with("clear", keybuffer, 5)) return clear;
   else if (str_begins_with("exit", keybuffer, 4)) return exit;
   else if (str_begins_with("help", keybuffer, 4)) return help;
+  else if (str_begins_with("test", keybuffer, 4)) return test_chars;
 
   return unknown_command;
 }
