@@ -34,11 +34,11 @@ void enable_bus_mastering(pci_device *device) {
 }
 
 pci_device **get_all_devices() {
-  pci_device **devices = (pci_device **)malloc((sizeof(pci_device *)*16), true, 0);
+  pci_device **devices = (pci_device **)malloc((sizeof(pci_device *)*5), true, 0);
   u8 pci_idx = 0;
 
-  for(u16 bus = 0; bus < 256; bus++) {
-    for(u8 dev = 0; dev < 32; dev++) {
+  for(u16 bus = 0; bus < 1; bus++) {
+    for(u8 dev = 0; dev < 5; dev++) {
       u16 vendor_id = pci_config_read(bus, dev, 0, 0);
       if (vendor_id == 0xFFFF) continue;
 

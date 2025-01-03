@@ -1,4 +1,4 @@
-C_SOURCES=$(wildcard kernel/*.c interrupts/*.c cpu/*.c lib/*.c drivers/*.c)
+C_SOURCES=$(wildcard kernel/*.c interrupts/*.c cpu/*.c lib/*.c drivers/*.c network/*.c)
 OBJ=${C_SOURCES:.c=.o}
 WSL_PATH=/mnt/c/Users/zackp
 
