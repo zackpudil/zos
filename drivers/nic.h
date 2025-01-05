@@ -26,6 +26,7 @@ typedef struct {
   volatile u8 cmd;
   volatile u8 status;
   volatile u8 css;
+  volatile u8 rsv;
   volatile u16 special;
 } tx_desc;
 #pragma pack(pop)

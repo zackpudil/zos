@@ -100,17 +100,6 @@ u8 *get_mac_address(pci_device *device) {
   return mac;
 }
 
-void write_mac_address(u8 *mac) {
-  u32 maclow = 0;
-  u32 machigh = 1 << 31;
-
-  mcopy(&mac[0], &maclow, 4);
-  mcopy(&mac[4], &machigh, 2);
-
-  write_command(0x5400, maclow);
-  write_command(0x5404, machigh);
-}
-
 u32 nic_handle_interrupt() {
   write_command(0x00D0, 0x1);
   u32 status = read_command(0x00C0);
@@ -142,11 +131,9 @@ u8 *init_nic(pci_device *device) {
 
   write_command(0x0000, 0x60);
 
-  write_mac_address(mac);
-
   rx_tx_init();
 
-  write_command(0x282C, 1);
+  write_command(0x282C, 0);
   write_command(0x2820, 1 << 31);
   write_command(0x00C4, 5000);
 
@@ -169,7 +156,7 @@ void nic_send_packet(ethernet_packet *p_data, u16 p_len) {
 
   current->addrl = (u64)p_data;
   current->length = p_len;
-  current->cmd = 0b00011001;
+  current->cmd = 0b10011011;
   current->status = 0;
 
   tx_cur = (tx_cur + 1) % 8;
