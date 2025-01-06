@@ -2,6 +2,7 @@
 #include "ethernet.h"
 #include "../drivers/nic.h"
 #include "ip.h"
+#include "arp.h"
 #include "../lib/mem.h"
 #include "../cpu/bits.h"
 
@@ -25,5 +26,11 @@ void ethernet_recieve_packet(ethernet_packet *eth, u16 size) {
         (u8 *)eth + sizeof(ethernet_packet) + sizeof(ip_packet),
         size - sizeof(ip_packet)
     );
+
+    return;
+  }
+  
+  if (type == 0x0806) {
+    arp_recieve_packet((arp_packet *)((u8 *)eth + sizeof(ethernet_packet)));
   }
 }

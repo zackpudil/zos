@@ -2,12 +2,14 @@
 #include "ethernet.h"
 #include "udp.h"
 #include "dhcp.h"
+#include "arp.h"
 
 #include "../interrupts/isr.h"
 #include "../drivers/nic.h"
 #include "../lib/mem.h"
 #include "../cpu/pci.h"
 
+#include "../lib/string.h"
 #include "../lib/print.h"
 
 static network_info *net_info;
@@ -17,7 +19,7 @@ static bool network_requst_accepted = false;
 static void network_interrupt(registers_t regs) {
   u32 status = nic_handle_interrupt();
 
-  if (status == 0x16 || status == 0x80) {
+  if (status & 0x80 || status & 0x10) {
     rx_desc *rx = nic_read_packet();
 
     while (rx->status & 0x1) {
@@ -31,13 +33,13 @@ static void network_interrupt(registers_t regs) {
   }
 }
 
-static void handle_upd_packet(void *data, u16 size) {
+static void handle_dhcp_packet(void *data, u16 size) {
   dhcp_packet *packet = (dhcp_packet *)data;
 
   if (!network_offer_receieved) {
     dhcp_request_offer(net_info, packet);
     network_offer_receieved = true;
-  } else {
+  } else if (!network_requst_accepted) {
     mcopy(packet->options + 11, net_info->subnet_mask, 4);
     mcopy(packet->options + 17, net_info->gateway_addr, 4);
     mcopy(packet->options + 23, net_info->dns_server, 4);
@@ -57,11 +59,17 @@ network_info *init_network(pci_device *device) {
   register_interrupt_handler(IRQ0 + device->int_line, network_interrupt);
   nic_enable_interrupt();
 
-  udp_install_instener(68, handle_upd_packet);
+  udp_install_instener(68, handle_dhcp_packet);
 
   dhcp_send_discover(net_info);
 
   while (!network_requst_accepted) { }
+
+  u8 *gateway_mac = arp_get_mach_address(net_info, net_info->gateway_addr, (u8[6]){255,255,255,255,255,255});
+  mcopy(gateway_mac, net_info->gateway_mac, 6);
+
+  u8 *dns_mac = arp_get_mach_address(net_info, net_info->dns_server, net_info->gateway_mac);
+  mcopy(dns_mac, net_info->dns_mac, 6);
 
   return net_info;
 }

@@ -37,7 +37,7 @@ void dhcp_send_discover(network_info *net) {
   udp_send_packet(net,
       (u8[]){0,0,0,0}, 68,
       (u8[]){255,255,255,255}, 67,
-      packet, sizeof(dhcp_packet)
+      packet, sizeof(dhcp_packet) 
   );
 }
 

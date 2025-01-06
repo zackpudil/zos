@@ -88,7 +88,7 @@ void nic_enable_interrupt() {
   read_command(0xC0);
 }
 
-u8 *get_mac_address(pci_device *device) {
+u8 *get_mac_address() {
   u8 *mac = (u8 *)malloc(sizeof(u8)*6, true, 0);
 
   u32 temp;
@@ -101,8 +101,23 @@ u8 *get_mac_address(pci_device *device) {
   return mac;
 }
 
+void write_mac_address(u8 *mac) {
+  u32 mac_low = 0;
+  u32 mac_high = 1 << 31;
+
+  mcopy(mac, &mac_low, 4);
+  mcopy(&mac[4], &mac_high, 2);
+
+  write_command(0x5400, mac_low);
+  write_command(0x5404, mac_high);
+}
+
 u32 nic_handle_interrupt() {
   u32 status = read_command(0x00C0);
+
+  if (status & 0x04) read_command(0x0008);
+
+  //read_command(0x00C0);
 
   return status;
 }
@@ -122,7 +137,8 @@ u8 *init_nic(pci_device *device) {
   while (read_command(0x000) & (1 << 26)) {};
 
   write_command(0x0010, 0x07);
-  u8 *mac = get_mac_address(device);
+  u8 *mac = get_mac_address();
+  write_mac_address(mac);
 
   write_command(0x0028, 0);
   write_command(0x002C, 0);
@@ -145,8 +161,10 @@ u8 *init_nic(pci_device *device) {
 rx_desc *nic_read_packet() {
   rx_desc *ret = (rx_desc *)(rx_descs + 16*rx_cur);
 
-  write_command(0x2818, rx_cur);
-  rx_cur = (rx_cur + 1) % 32;
+  if (ret->status != 0) {
+    write_command(0x2818, rx_cur);
+    rx_cur = (rx_cur + 1) % 32;
+  }
 
   return ret;
 }
@@ -155,7 +173,7 @@ void nic_send_packet(ethernet_packet *p_data, u16 p_len) {
   tx_desc *current = (tx_desc *)(tx_descs + 16*tx_cur);
   current->addrl = (u64)p_data;
   current->length = p_len + 10;
-  current->cmd = 0b10011011;
+  current->cmd = 0x0D;
   current->status = 0;
 
   tx_cur = (tx_cur + 1) % 8;
@@ -164,11 +182,6 @@ void nic_send_packet(ethernet_packet *p_data, u16 p_len) {
 
   write_command(0x3818, tx_cur);
   while (current->status == 0) {}
-
-  rx_desc *rx = (rx_desc *)rx_descs;
-  u8 t = tx_cur;
-  tx_cur = rx->status;
-  tx_cur = t;
 
   asm volatile("sti");
 }
