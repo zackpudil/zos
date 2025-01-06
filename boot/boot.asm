@@ -1,17 +1,17 @@
 [bits 16]
 [org 0x7c00]
 
-KERNEL_ADDR equ 0x1000
+KERNEL_ADDR equ 0x7e00
 
 start:
   ; initialize stack pointer
-  mov bp, 0x9000
+  mov bp, 0xfd00
   mov sp, bp
 
   mov bx, LOADING_MSG
   call print
 
-  mov dh, 54
+  mov dh, 63
   call load_kernel
 
   call switch
@@ -47,7 +47,7 @@ load_kernel:
   mov ch, 0x00 ; cylinder
   mov cl, 0x02 ; start Sector
   mov dh, 0x00 ; head
-  mov dl, 0x00 ; drive
+  mov dl, 0x80 ; drive
 
   mov bx, KERNEL_ADDR ; buffer
 
@@ -59,15 +59,35 @@ load_kernel:
   cmp al, dh
   jne .sectors_error
 
+  ;mov ah, 0x02
+  ;mov al, dh
+  ;mov ch, 0x01
+  ;mov cl, 0x01
+  ;mov dh, 0x00
+  ;mov dl, 0x80
+  ;mov bx, KERNEL_ADDR + 512*54
+
+  ;int 0x13
+  
+  ;jc .disk_error
+
+  ;pop dx
+  ;cmp al, dh
+  ;jne .sectors_error
+
   popa
   ret
 
 .disk_error:
   mov bx, DISK_ERROR
   call print
+
   jmp $
 
 .sectors_error:
+  mov ah, al
+  mov ah, 0x0e
+  int 0x10
   mov bx, SECTOR_ERROR
   call print
   jmp $

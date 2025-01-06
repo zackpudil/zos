@@ -5,8 +5,8 @@
 
 #pragma pack(push, 1)
 typedef struct {
-  u8 src_mac[6];
   u8 dest_mac[6];
+  u8 src_mac[6];
   u16 eth_type;
 } ethernet_packet;
 #pragma pack(pop)

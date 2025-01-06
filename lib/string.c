@@ -11,6 +11,32 @@ bool str_begins_with(char *starts, char *test, u8 start_len) {
 
 static char *s =  (char *)0;
 
+char *number_to_string(u8 number) {
+  if (!s) {
+    s = (char *)malloc(sizeof(char)*9, true, 0);
+  }
+  mset((u8 *)s, (u8)'\0', 9);
+
+  if (number == 0) {
+    s[0] = '0';
+    return s;
+  }
+
+  u8 i = 0;
+  while (number > 0) {
+    s[i++] = number % 10 + '0';
+    number /= 10;
+  }
+
+  for (u8 j = 0, k = i - 1; j < k; j++, k--) {
+    char temp = s[j];
+    s[j] = s[k];
+    s[k] = temp;
+  }
+
+  return s;
+}
+
 char *data_to_str(u32 c, u8 nibbles) {
   if (!s) {
     s = (char *)malloc(sizeof(char)*9, true, 0);
@@ -59,6 +85,7 @@ u16 str_to_word(char *s) {
 u8 str_to_byte(char *s) {
   return (u8)str_to_data(s, 2);
 }
+
 
 u8 char_to_nibble(char c) {
   switch(c) {

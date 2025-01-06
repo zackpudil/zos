@@ -69,7 +69,7 @@ void rx_tx_init() {
   write_command(0x2808, 32*16);
   write_command(0x2810, 0);
   write_command(0x2818, 31);
-  write_command(0x0100, 0x602803E);
+  write_command(0x0100, 0x202803E);
   rx_cur = 0;
 
   write_command(0x3800, (u32)tx_descs);
@@ -83,8 +83,9 @@ void rx_tx_init() {
 }
 
 void nic_enable_interrupt() {
-  write_command(0x00D0, 0xD86F);
-  read_command(0x00C0);
+  write_command(0x00D0, 0x1F6DC);
+  write_command(0x00D0, 0xff & ~4);
+  read_command(0xC0);
 }
 
 u8 *get_mac_address(pci_device *device) {
@@ -101,9 +102,8 @@ u8 *get_mac_address(pci_device *device) {
 }
 
 u32 nic_handle_interrupt() {
-  write_command(0x00D0, 0x1);
   u32 status = read_command(0x00C0);
-  if (status == 3) read_command(0x00D0);
+
   return status;
 }
 
@@ -153,9 +153,8 @@ rx_desc *nic_read_packet() {
 
 void nic_send_packet(ethernet_packet *p_data, u16 p_len) {
   tx_desc *current = (tx_desc *)(tx_descs + 16*tx_cur);
-
   current->addrl = (u64)p_data;
-  current->length = p_len;
+  current->length = p_len + 10;
   current->cmd = 0b10011011;
   current->status = 0;
 
@@ -165,6 +164,11 @@ void nic_send_packet(ethernet_packet *p_data, u16 p_len) {
 
   write_command(0x3818, tx_cur);
   while (current->status == 0) {}
+
+  rx_desc *rx = (rx_desc *)rx_descs;
+  u8 t = tx_cur;
+  tx_cur = rx->status;
+  tx_cur = t;
 
   asm volatile("sti");
 }

@@ -26,5 +26,6 @@ typedef struct {
 #pragma pack(pop)
 
 void dhcp_send_discover(network_info *);
+void dhcp_request_offer(network_info *, dhcp_packet *);
 
 #endif

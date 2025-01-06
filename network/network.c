@@ -9,32 +9,41 @@
 #include "../cpu/pci.h"
 
 #include "../lib/print.h"
-#include "../lib/string.h"
-
 
 static network_info *net_info;
+static bool network_offer_receieved = false;
+static bool network_requst_accepted = false;
 
 static void network_interrupt(registers_t regs) {
   u32 status = nic_handle_interrupt();
 
-  print_str(dword_to_str(status), 0x01, 0x00);
-  print_char('\n', 0x00, 0x00);
-
   if (status == 0x16 || status == 0x80) {
     rx_desc *rx = nic_read_packet();
 
-    ethernet_packet *packet = (ethernet_packet*)rx->addrh;
+    while (rx->status & 0x1) {
 
-    ethernet_recieve_packet(packet, rx->length);
+      ethernet_packet *packet = (ethernet_packet*)rx->addrl;
+      ethernet_recieve_packet(packet, rx->length);
+
+      rx->status = 0;
+      rx = nic_read_packet();
+    }
   }
 }
 
 static void handle_upd_packet(void *data, u16 size) {
   dhcp_packet *packet = (dhcp_packet *)data;
 
-  for(u8 i = 0; i < 4; i++) {
-    print_str(byte_to_str(packet->yiaddr[i]), 0x01, 0x00);
-    print_char('.', 0x01, 0x00);
+  if (!network_offer_receieved) {
+    dhcp_request_offer(net_info, packet);
+    network_offer_receieved = true;
+  } else {
+    mcopy(packet->options + 11, net_info->subnet_mask, 4);
+    mcopy(packet->options + 17, net_info->gateway_addr, 4);
+    mcopy(packet->options + 23, net_info->dns_server, 4);
+    mcopy(packet->yiaddr, net_info->ip_addr, 4);
+
+    network_requst_accepted = true;
   }
 }
 
@@ -51,6 +60,8 @@ network_info *init_network(pci_device *device) {
   udp_install_instener(68, handle_upd_packet);
 
   dhcp_send_discover(net_info);
+
+  while (!network_requst_accepted) { }
 
   return net_info;
 }

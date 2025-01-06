@@ -30,7 +30,8 @@ void kmain() {
   clear_screen(background_color);
   set_cursor(0, 0);
 
-  kprint_str("ZOS is a NOT an os \n");
+  print_str("ZOS is a NOT an os \n", 0x2f, 0x3f);
+  kprint_char('\n');
 
   set_display_buffer();
   video_draw();
@@ -39,15 +40,48 @@ void kmain() {
   kprint_str(word_to_str(devices[3]->vendor_id));
   kprint_str("  DeviceId: ");
   kprint_str(word_to_str(devices[3]->device_id));
-  kprint_char('\n');
+  kprint_str("\n\n");
+
+  print_str("Loading Network Info...", 0x28, 0);
+
+  set_display_buffer();
+  video_draw();
+
+  set_cursor(5, 0);
 
   network_info *nic = init_network(devices[3]);
 
-  kprint_str("Found MAC address: \n  ");
+  kprint_str("Found MAC address:             \n  ");
   for(u8 i = 0; i < 6; i++) {
     char *word = byte_to_str(nic->mac[i]);
     kprint_str(word);
     if (i != 5) kprint_str(":");
+  }
+  kprint_str("\n\n");
+  kprint_str("Found DHCP Offer: \n  ");
+  kprint_str("IP Address: ");
+  for(u8 i = 0; i < 4; i++) {
+    char *word = number_to_string(nic->ip_addr[i]);
+    kprint_str(word);
+    if (i != 3) kprint_str(".");
+  }
+  kprint_str("\n  Gateway Address: ");
+  for(u8 i = 0; i < 4; i++) {
+    char *word = number_to_string(nic->gateway_addr[i]);
+    kprint_str(word);
+    if (i != 3) kprint_str(".");
+  }
+  kprint_str("\n  Subnet Mask: ");
+  for(u8 i = 0; i < 4; i++) {
+    char *word = number_to_string(nic->subnet_mask[i]);
+    kprint_str(word);
+    if (i != 3) kprint_str(".");
+  }
+  kprint_str("\n  DNS Server: ");
+  for(u8 i = 0; i < 4; i++) {
+    char *word = number_to_string(nic->dns_server[i]);
+    kprint_str(word);
+    if (i != 3) kprint_str(".");
   }
   kprint_char('\n');
 
