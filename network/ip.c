@@ -1,4 +1,5 @@
 #include "ip.h"
+#include "arp.h"
 #include "ethernet.h"
 #include "udp.h"
 #include "../lib/mem.h"
@@ -46,9 +47,14 @@ void ip_send_packet(
 
   packet->header_checksum = ip_calculate_checksum(packet);
 
-  // TODO: implemnet ARP, currently just doing DHCP
   u8 dest_mac[6];
-  mset(dest_mac, 0xff, 6);
+
+  if (dest_ip[0] == 255 && dest_ip[1] == 255 && dest_ip[2] == 255 && dest_ip[3]) {
+    mset(dest_mac, 0xff, 6);
+  } else {
+    u8 *mac = arp_get_mach_address(net, dest_ip, (u8[6]){255,255,255,255,255,255});
+    mcopy(mac, dest_mac, 6);
+  }
 
   ethernet_send_packet(net, dest_mac, 0x0800, packet, sizeof(ip_packet) + size);
 }

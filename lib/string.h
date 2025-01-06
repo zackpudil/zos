@@ -14,6 +14,8 @@ u8 str_to_byte(char *s);
 u16 str_to_word(char *s);
 u32 str_to_dword(char *s);
 
+u32 str_len(char *s);
+
 u8 char_to_nibble(char c);
 char nibble_to_char(u8 i);
 

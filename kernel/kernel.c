@@ -75,13 +75,6 @@ void kmain() {
     if (i != 3) kprint_str(".");
   }
 
-  kprint_str("\n  Gateway MAC: ");
-  for(u8 i = 0; i < 6; i++) {
-    char *word = byte_to_str(nic->gateway_mac[i]);
-    kprint_str(word);
-    if (i != 5) kprint_str(":");
-  }
-
   kprint_str("\n  Subnet Mask: ");
   for(u8 i = 0; i < 4; i++) {
     char *word = number_to_string(nic->subnet_mask[i]);
@@ -94,13 +87,6 @@ void kmain() {
     char *word = number_to_string(nic->dns_server[i]);
     kprint_str(word);
     if (i != 3) kprint_str(".");
-  }
-
-  kprint_str("\n  DNS MAC: ");
-  for(u8 i = 0; i < 6; i++) {
-    char *word = byte_to_str(nic->dns_mac[i]);
-    kprint_str(word);
-    if (i != 5) kprint_str(":");
   }
 
   kprint_char('\n');

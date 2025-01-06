@@ -3,6 +3,7 @@
 #include "udp.h"
 #include "dhcp.h"
 #include "arp.h"
+#include "dns.h"
 
 #include "../interrupts/isr.h"
 #include "../drivers/nic.h"
@@ -65,11 +66,8 @@ network_info *init_network(pci_device *device) {
 
   while (!network_requst_accepted) { }
 
-  u8 *gateway_mac = arp_get_mach_address(net_info, net_info->gateway_addr, (u8[6]){255,255,255,255,255,255});
-  mcopy(gateway_mac, net_info->gateway_mac, 6);
+  dns_get_answers(net_info, ".www.google.com");
 
-  u8 *dns_mac = arp_get_mach_address(net_info, net_info->dns_server, net_info->gateway_mac);
-  mcopy(dns_mac, net_info->dns_mac, 6);
 
   return net_info;
 }

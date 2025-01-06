@@ -86,6 +86,15 @@ u8 str_to_byte(char *s) {
   return (u8)str_to_data(s, 2);
 }
 
+u32 str_len(char *s) {
+  u32 i = 0;
+  while (s[i] != '\0') {
+    i++;
+  }
+
+  return i;
+}
+
 
 u8 char_to_nibble(char c) {
   switch(c) {
