@@ -6,9 +6,10 @@
 
 static u8 dns_response[4];
 static bool dns_packet_recieved = false;
+static u16 dns_question_size;
 
 static void dns_handle_recieve(void *data, u16 size) {
-  mcopy(data + 44, dns_response, 4);
+  mcopy(data + sizeof(dns_packet) + dns_question_size + 12, dns_response, 4);
   dns_packet_recieved = true;
 }
 
@@ -39,12 +40,15 @@ u8 *dns_get_answers(network_info *net, char *labels) {
   mset((u8 *)packet + sizeof(dns_packet) + str_len(labels) + 4, 1, 1);
   mset((u8 *)packet + sizeof(dns_packet) + str_len(labels) + 5, 0, 1);
 
+  dns_question_size = str_len(labels) + 5;
+
   udp_install_instener(54, dns_handle_recieve);
   udp_send_packet(net, net->ip_addr, 54, net->dns_server, 53, packet, packet_size); 
 
   while(!dns_packet_recieved) { }
 
   udp_remove_listner(54);
+  dns_packet_recieved = false;
 
   return dns_response;
 }

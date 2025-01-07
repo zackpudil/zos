@@ -4,6 +4,7 @@
 #include "dhcp.h"
 #include "arp.h"
 #include "dns.h"
+#include "icmp.h"
 
 #include "../interrupts/isr.h"
 #include "../drivers/nic.h"
@@ -71,4 +72,9 @@ network_info *init_network(pci_device *device) {
 
 u8 *get_ip_addr(char *label) {
   return dns_get_answers(net_info, label);
+}
+
+u32 ping(char *dest) {
+  u8 *ip = dns_get_answers(net_info, dest);
+  return icmp_ping(net_info, ip);
 }

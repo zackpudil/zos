@@ -2,6 +2,7 @@
 #include "arp.h"
 #include "ethernet.h"
 #include "udp.h"
+#include "icmp.h"
 #include "../lib/mem.h"
 #include "../cpu/bits.h"
 
@@ -49,10 +50,15 @@ void ip_send_packet(
 
   u8 dest_mac[6];
 
-  if (dest_ip[0] == 255 && dest_ip[1] == 255 && dest_ip[2] == 255 && dest_ip[3]) {
+  if (dest_ip[0] == 255 && dest_ip[1] == 255 && dest_ip[2] == 255 && dest_ip[3] == 255) {
     mset(dest_mac, 0xff, 6);
   } else {
     u8 *mac = arp_get_mach_address(net, dest_ip, (u8[6]){255,255,255,255,255,255});
+
+    if (mac[0] == 0 && mac[1] == 0 && mac[2] == 0 && mac[3] == 0 && mac[4] == 0) {
+      mac = arp_get_mach_address(net, net->gateway_addr, (u8[6]){255,255,255,255,255,255});
+    }
+
     mcopy(mac, dest_mac, 6);
   }
 
@@ -65,5 +71,7 @@ void ip_recieve_packet(
 {
   if (packet->protocol == 0x11) {
     udp_recieve_packet(packet, data, size + sizeof(udp_packet));
+  } else if (packet->protocol == 0x01) {
+    icmp_recieve_packet(packet, data, size + sizeof(icmp_packet));
   }
 }

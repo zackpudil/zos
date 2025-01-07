@@ -32,9 +32,14 @@ void arp_recieve_packet(arp_packet *packet) {
 
 u8 *arp_get_mach_address(network_info *net, u8 dest_ip[4], u8 dest_mac[6]) {
   last_arp_requested_is_finished = false;
+  mset(arp_requested_destination_mac, 0, 6);
+
   arp_send_packet(net, dest_ip, dest_mac);
 
-  while (!last_arp_requested_is_finished) {}
+  u32 i = 0;
+  while (!last_arp_requested_is_finished && i < 60000000) {
+    i++;
+  }
 
   return arp_requested_destination_mac;
 } 
