@@ -4,15 +4,15 @@
 #include "../lib/print.h"
 #include "../cpu/bits.h"
 
-static void dns_handle_recieve(void *data, u16 size) {
-  dns_packet *packet = (dns_packet *)data;
+static u8 dns_response[4];
+static bool dns_packet_recieved = false;
 
-  print_char('_', 1, 0);
-  print_str(byte_to_str(packet->flags), 1, 0);
-  print_char('_', 1, 0);
+static void dns_handle_recieve(void *data, u16 size) {
+  mcopy(data + 44, dns_response, 4);
+  dns_packet_recieved = true;
 }
 
-char *dns_get_answers(network_info *net, char *labels) {
+u8 *dns_get_answers(network_info *net, char *labels) {
   u16 packet_size = sizeof(dns_packet) + str_len(labels) + 5;
 
   dns_packet *packet = (dns_packet *)malloc(packet_size, false, 0);
@@ -40,8 +40,11 @@ char *dns_get_answers(network_info *net, char *labels) {
   mset((u8 *)packet + sizeof(dns_packet) + str_len(labels) + 5, 0, 1);
 
   udp_install_instener(54, dns_handle_recieve);
-
   udp_send_packet(net, net->ip_addr, 54, net->dns_server, 53, packet, packet_size); 
 
-  return "";
+  while(!dns_packet_recieved) { }
+
+  udp_remove_listner(54);
+
+  return dns_response;
 }

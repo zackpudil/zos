@@ -47,12 +47,10 @@ void kmain() {
   set_display_buffer();
   video_draw();
 
-  set_cursor(5, 0);
-
   network_info *nic = init_network(devices[3]);
 
   
-  kprint_str("Network Info:                     \n");
+  kprint_str("Network Info: \n");
 
   kprint_str("  IP Address: ");
   for(u8 i = 0; i < 4; i++) {
@@ -89,6 +87,18 @@ void kmain() {
     if (i != 3) kprint_str(".");
   }
 
+  kprint_str("\n\n");
+
+  print_str("Getting Google's IP Address....", 0x28, 0);
+  kprint_char('\n');
+  kprint_str("Google IP Address: ");
+
+  u8 *google_ip = get_ip_addr(".www.google.com");
+  for(u8 i = 0; i < 4; i++) {
+    char *word = number_to_string(google_ip[i]);
+    kprint_str(word);
+    if (i != 3) kprint_str(".");
+  }
   kprint_char('\n');
 
   kprint_char('>');

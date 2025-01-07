@@ -15,6 +15,6 @@ typedef struct {
 } dns_packet;
 #pragma pack(pop)
 
-char *dns_get_answers(network_info *, char *);
+u8 *dns_get_answers(network_info *, char *);
 
 #endif

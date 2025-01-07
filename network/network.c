@@ -66,9 +66,9 @@ network_info *init_network(pci_device *device) {
 
   while (!network_requst_accepted) { }
 
-  dns_get_answers(net_info, ".www.google.com");
-
-
   return net_info;
 }
 
+u8 *get_ip_addr(char *label) {
+  return dns_get_answers(net_info, label);
+}
