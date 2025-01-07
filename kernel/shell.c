@@ -128,7 +128,7 @@ void get_ping(char *keybuffer, u8 *f, u8 *b) {
 
   u32 i = ping(keybuffer + 4);
   print_str("Ping done in (", *f, *b);
-  print_str(data_to_str(i), *f, *b);
+  print_str(dword_to_str(i), *f, *b);
   print_str(") cycles\n", *f, *b);
 }
 

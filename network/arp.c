@@ -6,8 +6,8 @@
 #include "../lib/string.h"
 #include "../lib/print.h"
 
-static arp_requested_destination_mac[6] = {0,0,0,0,0,0};
-static last_arp_requested_is_finished = false;
+static u8 arp_requested_destination_mac[6] = {0,0,0,0,0,0};
+static bool last_arp_requested_is_finished = false;
 
 void arp_send_packet(network_info *net, u8 ip[4], u8 mac[6]) {
   arp_packet *packet = (arp_packet *)malloc(sizeof(arp_packet), false, 0);

@@ -19,5 +19,6 @@ typedef struct {
 #pragma pack(pop)
 
 u8 *arp_get_mach_address(network_info *net, u8 dip[4], u8 dmac[6]);
+void arp_recieve_packet(arp_packet *);
 
 #endif

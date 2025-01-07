@@ -105,8 +105,8 @@ void write_mac_address(u8 *mac) {
   u32 mac_low = 0;
   u32 mac_high = 1 << 31;
 
-  mcopy(mac, &mac_low, 4);
-  mcopy(&mac[4], &mac_high, 2);
+  mcopy(mac, (u8 *)&mac_low, 4);
+  mcopy(&mac[4], (u8 *)&mac_high, 2);
 
   write_command(0x5400, mac_low);
   write_command(0x5404, mac_high);
@@ -116,8 +116,6 @@ u32 nic_handle_interrupt() {
   u32 status = read_command(0x00C0);
 
   if (status & 0x04) read_command(0x0008);
-
-  //read_command(0x00C0);
 
   return status;
 }
