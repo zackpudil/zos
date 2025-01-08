@@ -74,7 +74,6 @@ u8 *get_ip_addr(char *label) {
   return dns_get_answers(net_info, label);
 }
 
-u32 ping(char *dest) {
-  u8 *ip = dns_get_answers(net_info, dest);
-  return icmp_ping(net_info, ip);
+u32 ping(u8 *dest) {
+  return icmp_ping(net_info, dest);
 }

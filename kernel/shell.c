@@ -41,17 +41,8 @@ void exit(char *keybuffer, u8 *f, u8 *b) {
   UNUSED(keybuffer);
 
   print_str("Shutting Down...........\n", *f, *b);
-  set_display_buffer();
   video_draw();
   asm("hlt");
-}
-
-void get_color(char *keybuffer, u8 *f, u8 *b) {
-  UNUSED(keybuffer);
-
-  print_char(nibble_to_char((*f >> 4) & 0x0F), *f, *b);
-  print_char(nibble_to_char(*f & 0x0F), *f, *b);
-  print_char('\n', 0x00, *b);
 }
 
 void set_color(char *keybuffer, u8 *f, u8 *b) {
@@ -59,14 +50,6 @@ void set_color(char *keybuffer, u8 *f, u8 *b) {
 
   u8 nf = str_to_byte(keybuffer+10);
   *f = nf;
-}
-
-void get_bgcolor(char *keybuffer, u8 *f, u8 *b) {
-  UNUSED(keybuffer);
-
-  print_char(nibble_to_char((*b >> 4) & 0x0F), *f, *b);
-  print_char(nibble_to_char(*b & 0x0F), *f, *b);
-  print_char('\n', 0x00, *b);
 }
 
 void set_bgcolor(char *keybuffer, u8 *f, u8 *b) {
@@ -122,22 +105,41 @@ void get_ping(char *keybuffer, u8 *f, u8 *b) {
   print_char('\n', *f, *b);
   print_str("Pinging: ", *f, *b);
   print_str(keybuffer + 5, *f, *b);
-  print_str("............\n", *f, *b);
-  set_display_buffer();
+  print_str("........\n", *f, *b);
+
   video_draw();
 
-  u32 i = ping(keybuffer + 4);
-  print_str("Ping done in (", *f, *b);
-  print_str(dword_to_str(i), *f, *b);
-  print_str(") cycles\n", *f, *b);
+  u8 *ip = get_ip_addr(keybuffer + 4);
+
+  for(u8 i = 5; i < str_len(keybuffer); i++) {
+    if (keybuffer[i] < 32) keybuffer[i] = '.';
+  }
+
+  print_str(keybuffer + 5, *f, *b);
+  print_str(" (", *f, *b);
+
+  for(u8 i = 0; i < 4; i++) {
+    print_str(number_to_string(ip[i]), *f, *b);
+    if (i != 3) print_char('.', *f, *b);
+  }
+
+  print_str(")\n\n", *f, *b);
+  video_draw();
+
+  for(int j = 0; j < 4; j++) {
+
+    u32 i = ping(ip);
+    print_str("Ping done in (", *f, *b);
+    print_str(dword_to_str(i), *f, *b);
+    print_str(") cycles\n", *f, *b);
+    video_draw();
+  }
 }
 
 void (*get_command(char *keybuffer))(char *, u8 *, u8 *) {
   if (str_begins_with("echo", keybuffer, 4)) return echo;
   else if(str_begins_with("set color", keybuffer, 8)) return set_color;
   else if(str_begins_with("set bgcolor", keybuffer, 10)) return set_bgcolor;
-  else if (str_begins_with("show color", keybuffer, 10)) return get_color;
-  else if (str_begins_with("show bgcolor", keybuffer, 12)) return get_bgcolor;
   else if(str_begins_with("show pallet", keybuffer, 10)) return print_color_pallet;
   else if (str_begins_with("clear", keybuffer, 5)) return clear;
   else if (str_begins_with("exit", keybuffer, 4)) return exit;

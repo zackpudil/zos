@@ -3,26 +3,14 @@
 
 u8 *screen = (u8 *)VIDEO_MEMORY;
 
-//u8 *display_buffer;
 u8 *working_buffer;
 
 void video_init() {
-  //display_buffer = (u8 *)malloc(BUFSIZE, true, 0);
   working_buffer = (u8 *)malloc(BUFSIZE, true, 0);
 }
 
 void video_draw() {
   mcopy(working_buffer, screen, BUFSIZE);
-}
-
-void set_display_buffer() {
-  //mcopy(working_buffer, display_buffer, BUFSIZE);
-}
-
-void swap_buffers() {
-  //u8 *temp = display_buffer;
-  //display_buffer = working_buffer;
-  //working_buffer = temp;
 }
 
 void clear_screen(u8 color) {

@@ -14,6 +14,6 @@ typedef struct {
 network_info *init_network();
 u8 *get_ip_addr(char *label);
 
-u32 ping(char *dest);
+u32 ping(u8 *dest);
 
 #endif

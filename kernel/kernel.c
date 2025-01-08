@@ -33,7 +33,6 @@ void kmain() {
   print_str("ZOS is a NOT an os \n", 0x2f, 0x3f);
   kprint_char('\n');
 
-  set_display_buffer();
   video_draw();
 
   kprint_str("Found Network Device: \n  VendorId: ");
@@ -44,7 +43,6 @@ void kmain() {
 
   print_str("Loading Network Info...\n", 0x28, 0);
 
-  set_display_buffer();
   video_draw();
 
   network_info *nic = init_network(devices[3]);
@@ -91,7 +89,6 @@ void kmain() {
   kprint_char('>');
   set_char('_', foreground_color, background_color);
 
-  set_display_buffer();
   video_draw();
 }
 
@@ -116,6 +113,5 @@ static void user_input(char input) {
   }
 
   set_char('_', foreground_color, background_color);
-  set_display_buffer();
   video_draw();
 }
