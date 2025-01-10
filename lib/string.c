@@ -1,6 +1,8 @@
 #include "string.h"
 #include "mem.h"
 
+static char *s =  (char *)0;
+
 bool str_begins_with(char *starts, char *test, u8 start_len) {
   for(u8 i = 0; i < start_len; i++) {
     if (starts[i] != test[i])  return false;
@@ -8,8 +10,6 @@ bool str_begins_with(char *starts, char *test, u8 start_len) {
 
   return true;
 }
-
-static char *s =  (char *)0;
 
 char *number_to_string(u8 number) {
   if (!s) {
@@ -35,6 +35,53 @@ char *number_to_string(u8 number) {
   }
 
   return s;
+}
+
+char **split(char *str, char c) {
+  char **strs = (char **)malloc(sizeof(char *)*10, false, 0);
+  
+  strs[0] = (char *)malloc(sizeof(char)*10, false, 0);
+  u8 j = 0;
+  u8 k = 0;
+
+  for(u8 i = 0; i < str_len(str); i++) {
+    if (str[i] == c) {
+      strs[j][k] = '\0';
+      j++;
+      k = 0;
+      strs[j] = (char *)malloc(sizeof(char)*10, false, 0);
+    } else {
+      strs[j][k] = str[i];
+      k++;
+    }
+  }
+
+  return strs;
+}
+
+bool is_ip(char *str) {
+  if (str[0] - 48 >= 10) return false;
+  if (str[1] != '.' && str[1] - 48 >= 10) return false;
+  if (str[2] != '.' && str[2] - 48 >= 10) return false;
+
+  return true;
+}
+
+/* THE MOST HACKIEST AND DUMMEST SHIT I'VE EVER DONE*/
+u8 str_to_number(char *str) {
+  u8 ret = 0;
+  if (str_len(str) == 3) {
+    ret += (str[0] - 48)*100;
+    ret += (str[1] - 48)*10;
+    ret += (str[2] - 48)*1;
+  } else if(str_len(str) == 2) {
+    ret += (str[0] - 48)*10;
+    ret += (str[1] - 48)*1;
+  } else if (str_len(str) == 1) {
+    ret += (str[0] - 48)*1;
+  }
+
+  return ret;
 }
 
 char *data_to_str(u32 c, u8 nibbles) {

@@ -101,7 +101,6 @@ void get_ip(char *keybuffer, u8 *f, u8 *b) {
 }
 
 void get_ping(char *keybuffer, u8 *f, u8 *b) {
-  *(keybuffer + 4) = '.';
   print_char('\n', *f, *b);
   print_str("Pinging: ", *f, *b);
   print_str(keybuffer + 5, *f, *b);
@@ -109,21 +108,31 @@ void get_ping(char *keybuffer, u8 *f, u8 *b) {
 
   video_draw();
 
-  u8 *ip = get_ip_addr(keybuffer + 4);
+  u8 ip[4];
+  if (!is_ip(keybuffer + 5)) {
 
-  for(u8 i = 5; i < str_len(keybuffer); i++) {
-    if (keybuffer[i] < 32) keybuffer[i] = '.';
+    *(keybuffer + 4) = '.';
+    mcopy(get_ip_addr(keybuffer + 4), ip, 4);
+
+    for(u8 i = 5; i < str_len(keybuffer); i++) {
+      if (keybuffer[i] < 32) keybuffer[i] = '.';
+    }
+    print_str(keybuffer + 5, *f, *b);
+    print_str(" (", *f, *b);
+
+    for(u8 i = 0; i < 4; i++) {
+      print_str(number_to_string(ip[i]), *f, *b);
+      if (i != 3) print_char('.', *f, *b);
+    }
+
+    print_str(")\n\n", *f, *b);
+  } else {
+    char **ips = split(keybuffer + 5, '.');
+    for(u8 i = 0; i < 4; i++) {
+      ip[i] = str_to_number(ips[i]);
+    }
   }
 
-  print_str(keybuffer + 5, *f, *b);
-  print_str(" (", *f, *b);
-
-  for(u8 i = 0; i < 4; i++) {
-    print_str(number_to_string(ip[i]), *f, *b);
-    if (i != 3) print_char('.', *f, *b);
-  }
-
-  print_str(")\n\n", *f, *b);
   video_draw();
 
   for(int j = 0; j < 4; j++) {

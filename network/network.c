@@ -67,6 +67,8 @@ network_info *init_network(pci_device *device) {
 
   while (!network_requst_accepted) { }
 
+  udp_remove_listner(68);
+
   return net_info;
 }
 

@@ -2,6 +2,7 @@
 #define STRING_H
 
 #include "../cpu/types.h"
+#include "mem.h"
 
 bool str_begins_with(char *starts, char *test, u8 start_len);
 
@@ -9,6 +10,10 @@ char *byte_to_str(u8 c);
 char *word_to_str(u16 c);
 char *dword_to_str(u32 c);
 char *number_to_string(u8 number);
+
+char **split(char *, char);
+u8 str_to_number(char *s);
+bool is_ip(char *);
 
 u8 str_to_byte(char *s);
 u16 str_to_word(char *s);
