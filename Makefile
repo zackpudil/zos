@@ -27,8 +27,11 @@ copy: zos.bin
 
 run: zos.bin
 	cp $^ ${WSL_PATH}/$^
+	touch ${WSL_PATH}/dump.pcap
 	cmd.exe /c "qemu-system-i386.exe ^ \
-		-drive file=$$(wslpath -w ${WSL_PATH}/$^),format=raw,index=0,if=ide^ \
+		-drive file=$$(wslpath -w ${WSL_PATH}/$^),format=raw,index=0,if=ide ^ \
+		-netdev user,id=u1 -device e1000,netdev=u1 ^ \
+		-object filter-dump,id=f1,netdev=u1,file=$$(wslpath -w ${WSL_PATH}/dump.pcap) ^ \
 		-vga std ^ \
 		-s -d guest_errors"
 

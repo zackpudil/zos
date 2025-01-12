@@ -2,18 +2,25 @@
 #include "ports.h"
 #include "../lib/mem.h"
 
-u16 pci_config_read(u8 bus, u8 device, u8 func, u8 offset) {
+u32 pci_get_address(u8 bus, u8 device, u8 func, u8 offset) {
   u32 address;
   u32 lbus = (u32)bus;
   u32 ldev = (u32)device;
   u32 lfunc = (u32)func;
-  u16 temp = 0;
 
   address = (lbus << 16) | (ldev << 11) | (lfunc << 8) | (offset & 0xFC) | PCI_E;
+
+  return address;
+}
+
+u16 pci_config_read(u8 bus, u8 device, u8 func, u8 offset) {
+  u32 address = pci_get_address(bus, device, func, offset);
 
   port_dword_out(PCI_REG_ADDRESS, address);
 
   u32 res = port_dword_in(PCI_REG_DATA);
+
+  u16 temp = 0;
   temp = (u16)(res >> ((offset & 2) * 8));
 
   return temp;
@@ -22,12 +29,7 @@ u16 pci_config_read(u8 bus, u8 device, u8 func, u8 offset) {
 void enable_bus_mastering(pci_device *device) {
   device->command = device->command | 4;
 
-  u32 address;
-  u32 lbus = (u32)device->bus;
-  u32 ldev = (u32)device->slot;
-  u32 lfunc = 0;
-
-  address = (lbus << 16) | (ldev << 11) | (lfunc << 8) | (4 & 0xFC) | PCI_E;
+  u32 address = pci_get_address(device->bus, device->slot, 0, 4);
 
   port_dword_out(PCI_REG_ADDRESS, address);
   port_dword_out(PCI_REG_DATA, (u32)(device->status << 16 ) | device->command);
