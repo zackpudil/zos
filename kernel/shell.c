@@ -137,9 +137,13 @@ void get_ping(char *keybuffer, u8 *f, u8 *b) {
 
   for(int j = 0; j < 4; j++) {
     u32 i = ping(ip);
-    print_str("Ping done in (", *f, *b);
-    print_str(dword_to_str(i), *f, *b);
-    print_str(") cycles\n", *f, *b);
+    if (i != ~0) {
+      print_str("Ping done in (", *f, *b);
+      print_str(dword_to_str(i), *f, *b);
+      print_str(") cycles\n", *f, *b);
+    } else {
+      print_str("Unreachable...\n", *f, *b);
+    }
     video_draw();
   }
 }

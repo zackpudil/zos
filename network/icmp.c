@@ -3,14 +3,18 @@
 #include "../lib/mem.h"
 
 static bool icmp_block = false;
+static bool icmp_success = false;
 
 u32 icmp_ping(network_info *net, u8 dest[4]) {
   u32 i = 0;
   icmp_block = true;
+  icmp_success = false;
   icmp_send_packet(net, dest);
   while (icmp_block) i++;
 
-  return i;
+  if (icmp_success) return i;
+
+  return ~0;
 }
 
 u32 icmp_calculate_checksum(icmp_packet *packet) {
@@ -44,5 +48,6 @@ void icmp_send_packet(network_info *net, u8 dest[4]) {
 
 void icmp_recieve_packet(ip_packet *packet, void *data, u16 size) {
   icmp_block = false;
-  // do nothing for now.
+  icmp_packet *p = (icmp_packet *)data;
+  icmp_success = p->type == 0 && p->code == 0;
 }
