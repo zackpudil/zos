@@ -11,9 +11,9 @@ u16 pci_config_read(u8 bus, u8 device, u8 func, u8 offset) {
 
   address = (lbus << 16) | (ldev << 11) | (lfunc << 8) | (offset & 0xFC) | PCI_E;
 
-  port_dword_out(0x0CF8, address);
+  port_dword_out(PCI_REG_ADDRESS, address);
 
-  u32 res = port_dword_in(0x0CFC);
+  u32 res = port_dword_in(PCI_REG_DATA);
   temp = (u16)(res >> ((offset & 2) * 8));
 
   return temp;
@@ -29,8 +29,8 @@ void enable_bus_mastering(pci_device *device) {
 
   address = (lbus << 16) | (ldev << 11) | (lfunc << 8) | (4 & 0xFC) | PCI_E;
 
-  port_dword_out(0x0CF8, address);
-  port_dword_out(0x0CFC, (u32)(device->status << 16 ) | device->command);
+  port_dword_out(PCI_REG_ADDRESS, address);
+  port_dword_out(PCI_REG_DATA, (u32)(device->status << 16 ) | device->command);
 }
 
 pci_device **get_all_devices() {

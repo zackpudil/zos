@@ -1,7 +1,7 @@
 #include "video.h"
 #include "../lib/mem.h"
 
-u8 *screen = (u8 *)VIDEO_MEMORY;
+volatile u8 *screen = (u8 *)VIDEO_MEMORY;
 
 u8 *working_buffer;
 
@@ -10,7 +10,7 @@ void video_init() {
 }
 
 void video_draw() {
-  mcopy(working_buffer, screen, BUFSIZE);
+  mcopy(working_buffer, (u8 *)screen, BUFSIZE);
 }
 
 void clear_screen(u8 color) {

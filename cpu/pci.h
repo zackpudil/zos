@@ -1,7 +1,9 @@
 #ifndef PCI_H
 #define PCI_H
 
-#define PCI_E 0x80000000
+#define PCI_E           0x80000000
+#define PCI_REG_ADDRESS 0x0CF8
+#define PCI_REG_DATA    0x0CFC
 
 #include "types.h"
 

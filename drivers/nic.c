@@ -8,22 +8,22 @@ static u8 *tx_descs;
 static u8 rx_cur;
 static u8 tx_cur;
 
-void write_command(u32 addr, u32 value) {
+void write_register(u32 addr, u32 value) {
   u32 laddr = base_address + addr;
   (*((volatile u32 *)(laddr))) = value;
 }
 
-u32 read_command(u32 addr) {
+u32 read_register(u32 addr) {
   u32 laddr = base_address + addr;
   return *((volatile u32*)(laddr));
 }
 
 bool detect_eeprom() {
   u32 val = 0;
-  write_command(0x0014, 0x1);
+  write_register(EPROM_REG, 0x1);
 
   for(int i = 0; i < 1000;  i++) {
-    val = read_command(0x0014);
+    val = read_register(EPROM_REG);
     if (val & 0x10) return true;
   }
 
@@ -34,9 +34,9 @@ u32 eeprom_read(u8 addr) {
   u16 data = 0;
   u32 temp = 0;
 
-  write_command(0x0014, ((u32)(addr) << 8) | 1);
+  write_register(EPROM_REG, ((u32)(addr) << 8) | 1);
 
-  while ( !((temp = read_command(0x0014)) & (1 << 4)) );
+  while ( !((temp = read_register(EPROM_REG)) & (1 << 4)) );
 
   data = (u16)((temp >> 16) & 0xFFFF);
 
@@ -64,28 +64,26 @@ void rx_tx_init() {
     }
   }
 
-  write_command(0x2800, (u32)rx_descs);
-  write_command(0x2804, 0);
-  write_command(0x2808, 32*16);
-  write_command(0x2810, 0);
-  write_command(0x2818, 31);
-  write_command(0x0100, 0x202803E);
+  write_register(RREG_BUFL, (u32)rx_descs);
+  write_register(RREG_BUFH, 0);
+  write_register(RREG_BUFSIZE, 32*16);
+  write_register(RREG_HEAD, 0);
+  write_register(RREG_TAIL, 31);
+  write_register(RREG_CONFIG, RVAL_CONFIG);
   rx_cur = 0;
 
-  write_command(0x3800, (u32)tx_descs);
-  write_command(0x3804, 0);
-  write_command(0x3808, 8*16);
-  write_command(0x3810, 0);
-  write_command(0x3818, 0);
-  write_command(0x0400, 0x10400FA);
-  write_command(0x0410, 0xA0280A);
+  write_register(TREG_BUFL, (u32)tx_descs);
+  write_register(TREG_BUFH, 0);
+  write_register(TREG_BUFSIZE, 8*16);
+  write_register(TREG_HEAD, 0);
+  write_register(TREG_TAIL, 0);
+  write_register(TREG_CONFIG, TVAL_CONFIG);
+  write_register(TREG_FLOW, TVAL_FLOW);
   tx_cur = 0;
 }
 
 void nic_enable_interrupt() {
-  write_command(0x00D0, 0x1F6DC);
-  write_command(0x00D0, 0xff & ~4);
-  read_command(0xC0);
+  write_register(GREG_INT_MASK, GVAL_INT_MASK);
 }
 
 u8 *get_mac_address() {
@@ -101,57 +99,19 @@ u8 *get_mac_address() {
   return mac;
 }
 
-void write_mac_address(u8 *mac) {
-  u32 mac_low = 0;
-  u32 mac_high = 1 << 31;
-
-  mcopy(mac, (u8 *)&mac_low, 4);
-  mcopy(&mac[4], (u8 *)&mac_high, 2);
-
-  write_command(0x5400, mac_low);
-  write_command(0x5404, mac_high);
-}
-
 u32 nic_handle_interrupt() {
-  u32 status = read_command(0x00C0);
+  u32 interrupt_cause = read_register(GREG_INT_CAUSE);
 
-  if (status & 0x04) read_command(0x0008);
-
-  return status;
+  return interrupt_cause;
 }
 
 u8 *init_nic(pci_device *device) {
   base_address = device->base_address_0;
   enable_bus_mastering(device);
 
-  write_command(0x0100, 0);
-  write_command(0x0400, 0);
-  read_command(0x0080);
-
-  u32 ctrl = read_command(0x0000);
-  ctrl |= (1 << 26);
-  write_command(0x0000, ctrl);
-
-  while (read_command(0x000) & (1 << 26)) {};
-
-  write_command(0x0010, 0x07);
   u8 *mac = get_mac_address();
-  write_mac_address(mac);
-
-  write_command(0x0028, 0);
-  write_command(0x002C, 0);
-  write_command(0x0030, 0);
-  write_command(0x0170, 0);
-
-  write_command(0x0000, 0x60);
 
   rx_tx_init();
-
-  write_command(0x282C, 0);
-  write_command(0x2820, 1 << 31);
-  write_command(0x00C4, 5000);
-
-  read_command(0x0008);
 
   return mac;
 }
@@ -160,7 +120,7 @@ rx_desc *nic_read_packet() {
   rx_desc *ret = (rx_desc *)(rx_descs + 16*rx_cur);
 
   if (ret->status != 0) {
-    write_command(0x2818, rx_cur);
+    write_register(RREG_TAIL, rx_cur);
     rx_cur = (rx_cur + 1) % 32;
   }
 
@@ -171,14 +131,14 @@ void nic_send_packet(ethernet_packet *p_data, u16 p_len) {
   tx_desc *current = (tx_desc *)(tx_descs + 16*tx_cur);
   current->addrl = (u64)p_data;
   current->length = p_len + 10;
-  current->cmd = 0x0D;
+  current->cmd = TSEND_CMD;
   current->status = 0;
 
   tx_cur = (tx_cur + 1) % 8;
 
   asm volatile("cli");
 
-  write_command(0x3818, tx_cur);
+  write_register(TREG_TAIL, tx_cur);
   while (current->status == 0) {}
 
   asm volatile("sti");

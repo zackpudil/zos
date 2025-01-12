@@ -37,4 +37,4 @@ debug: debug.elf
 			-ex "symbol-file $^" 
 
 clean:
-	$(RM) *.bin *.elf *.o **/*.bin **/*.elf **/*.o ${WSL_PATH}/*.bin
+	$(RM) *.bin *.elf *.o **/*.bin **/*.elf **/*.o ${WSL_PATH}/*.bin ${WSL_PATH}/*.pcap
