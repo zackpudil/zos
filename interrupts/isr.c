@@ -66,6 +66,7 @@ void isr_install() {
   set_idt_gate(47, (u32)irq15);
 
   set_idt();
+  asm volatile("sti");
 }
 
 void isr_handler(registers_t r) { }
@@ -82,9 +83,5 @@ void irq_handler(registers_t r) {
     isr_t handler = interrupt_handlers[r.int_no];
     handler(r);
   }
-}
-
-void irq_install() {
-  asm volatile("sti");
 }
 

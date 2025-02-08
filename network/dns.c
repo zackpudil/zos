@@ -10,7 +10,15 @@ static bool dns_packet_recieved = false;
 static u16 dns_question_size;
 
 static void dns_handle_recieve(void *data, u16 size) {
-  mcopy((u8 *)data + sizeof(dns_packet) + dns_question_size + 12, dns_response, 4);
+  dns_packet *pack = (dns_packet *)data;
+  u16 flags = switch_endian_16(pack->flags);
+
+  if (!((flags ^ 0xFFF0) & 0x000F)) {
+    mcopy((u8 *)data + sizeof(dns_packet) + dns_question_size + 12, dns_response, 4);
+  } else {
+    mcopy((u8 *)(&((u8[4]){0,0,0,0})), dns_response, 4);
+  }
+
   dns_packet_recieved = true;
 }
 
@@ -20,7 +28,7 @@ u8 *dns_get_answers(network_info *net, char *labels) {
   dns_packet *packet = (dns_packet *)malloc((u32)packet_size, false, 0);
 
   packet->transaction_id = switch_endian_16(0x1234);
-  packet->flags = 1 << 8;
+  packet->flags = switch_endian_16(1 << 8);
   packet->questions = switch_endian_16(1);
   packet->answers = 0;
   packet->auth_rrs = 0;

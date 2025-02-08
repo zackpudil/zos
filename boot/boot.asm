@@ -59,22 +59,6 @@ load_kernel:
   cmp al, dh
   jne .sectors_error
 
-  ;mov ah, 0x02
-  ;mov al, dh
-  ;mov ch, 0x01
-  ;mov cl, 0x01
-  ;mov dh, 0x00
-  ;mov dl, 0x80
-  ;mov bx, KERNEL_ADDR + 512*54
-
-  ;int 0x13
-  
-  ;jc .disk_error
-
-  ;pop dx
-  ;cmp al, dh
-  ;jne .sectors_error
-
   popa
   ret
 

@@ -52,9 +52,10 @@ static void handle_dhcp_packet(void *data, u16 size) {
 }
 
 network_info *init_network(pci_device *device) {
-  udp_init();
   net_info = (network_info *)malloc(sizeof(network_info), false, 0);
   u8 *mac = init_nic(device);
+
+  udp_init();
 
   mcopy(mac, net_info->mac, 6);
 

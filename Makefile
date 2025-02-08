@@ -10,9 +10,6 @@ all: run
 %.o: %.c 
 	gcc -g -m32 -Wall -ffreestanding -fno-pie -c $< -o $@
 
-debug.elf: kernel/entry.o interrupts/interrupts.o ${OBJ} 
-	ld -m elf_i386 -o $@ -Ttext 0x7e00 $^
-
 boot.bin: boot/boot.asm
 	nasm -f bin $< -o $@
 
@@ -21,9 +18,6 @@ kernel.bin: kernel/entry.o interrupts/interrupts.o ${OBJ}
 
 zos.bin: boot.bin kernel.bin
 	cat $^ > $@
-
-copy: zos.bin
-	cp $^ ${WSL_PATH}/$^
 
 run: zos.bin
 	cp $^ ${WSL_PATH}/$^
@@ -34,6 +28,9 @@ run: zos.bin
 		-object filter-dump,id=f1,netdev=u1,file=$$(wslpath -w ${WSL_PATH}/dump.pcap) ^ \
 		-vga std ^ \
 		-s -d guest_errors"
+
+debug.elf: kernel/entry.o interrupts/interrupts.o ${OBJ} 
+	ld -m elf_i386 -o $@ -Ttext 0x7e00 $^
 
 debug: debug.elf
 	gdb -ex "target remote $$(cat /etc/resolv.conf | tail -1 | sed 's/.* //'):1234" \

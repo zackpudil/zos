@@ -12,6 +12,7 @@ void mset(u8 *dest, u8 val, u32 len) {
 }
 
 u32 free_mem_addr = 0x10000;
+u32 fre_mem_addr_reset = 0x6e000;
 
 u32 malloc(u32 size, bool align, u32 *phys_addr) {
   if (align == true && (free_mem_addr & 0xFFFFF000)) {
@@ -23,6 +24,10 @@ u32 malloc(u32 size, bool align, u32 *phys_addr) {
 
   u32 ret = free_mem_addr;
   free_mem_addr += size;
+
+  if (free_mem_addr >= 0xbf000) {
+    free_mem_addr = fre_mem_addr_reset;
+  }
   return ret;
 }
 

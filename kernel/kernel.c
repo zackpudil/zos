@@ -20,20 +20,16 @@ void kprint_char(char s) { print_char(s, foreground_color, background_color); }
 
 void kmain() {
   isr_install();
-  irq_install();
-
   init_keyboard(user_input);
-
   video_init();
-  pci_device **devices = get_all_devices();
 
   clear_screen(background_color);
   set_cursor(0, 0);
-
   print_str("ZOS is a NOT an os \n", 0x2f, 0x3f);
   kprint_char('\n');
-
   video_draw();
+
+  pci_device **devices = get_all_devices();
 
   kprint_str("Found Network Device: \n  VendorId: ");
   kprint_str(word_to_str(devices[3]->vendor_id));
@@ -49,47 +45,27 @@ void kmain() {
   
   kprint_str("Network Info: \n");
 
-  kprint_str("  IP Address: ");
-  for(u8 i = 0; i < 4; i++) {
-    char *word = number_to_string(nic->ip_addr[i]);
-    kprint_str(word);
-    if (i != 3) kprint_str(".");
-  }
+  print_net_data(nic->ip_addr, "  IP Address: ", 4, '.', number_to_string);
+  print_net_data(nic->mac, "\n  MAC Address: ", 6, ':', byte_to_str);
+  print_net_data(nic->gateway_addr, "\n  Gateway Address: ", 4, '.', number_to_string);
+  print_net_data(nic->subnet_mask, "\n  Subnet Mask: ", 4, '.', number_to_string);
+  print_net_data(nic->dns_server, "\n  DNS Server: ", 4, '.', number_to_string);
 
-  kprint_str("\n  MAC address: ");
-  for(u8 i = 0; i < 6; i++) {
-    char *word = byte_to_str(nic->mac[i]);
-    kprint_str(word);
-    if (i != 5) kprint_str(":");
-  }
-
-  kprint_str("\n  Gateway Address: ");
-  for(u8 i = 0; i < 4; i++) {
-    char *word = number_to_string(nic->gateway_addr[i]);
-    kprint_str(word);
-    if (i != 3) kprint_str(".");
-  }
-
-  kprint_str("\n  Subnet Mask: ");
-  for(u8 i = 0; i < 4; i++) {
-    char *word = number_to_string(nic->subnet_mask[i]);
-    kprint_str(word);
-    if (i != 3) kprint_str(".");
-  }
-
-  kprint_str("\n  DNS Server: ");
-  for(u8 i = 0; i < 4; i++) {
-    char *word = number_to_string(nic->dns_server[i]);
-    kprint_str(word);
-    if (i != 3) kprint_str(".");
-  }
-
-  kprint_char('\n');
+  kprint_char('\n'); 
 
   kprint_char('>');
   set_char('_', foreground_color, background_color);
 
   video_draw();
+}
+
+void print_net_data(u8 *data, char *header, int size, char seperatr, char *(*str_hnd)(u8)) {
+  kprint_str(header);
+  for(u8 i = 0; i < size; i++) {
+    char *word = str_hnd(data[i]);
+    kprint_str(word);
+    if (i != size - 1) kprint_char(seperatr);
+  }
 }
 
 static void user_input(char input) {
