@@ -17,6 +17,7 @@ static void user_input(char input);
 
 void kprint_str(char *s) { print_str(s, foreground_color, background_color); }
 void kprint_char(char s) { print_char(s, foreground_color, background_color); }
+void print_net_data(u8 *, char *, int, char, char *(*str_hnd)(u8));
 
 void kmain() {
   isr_install();
